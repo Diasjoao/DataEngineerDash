@@ -1,0 +1,1777 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Logicalis AWS Account Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --bg2: #0f1628;
+    --bg3: #161e35;
+    --surface: #1a2440;
+    --surface2: #1f2d4e;
+    --border: #253356;
+    --border2: #2e3f6a;
+    --accent: #ff6b35;
+    --accent2: #ff8c5a;
+    --blue: #3b82f6;
+    --blue2: #60a5fa;
+    --green: #22c55e;
+    --yellow: #f59e0b;
+    --red: #ef4444;
+    --purple: #a855f7;
+    --text: #e2e8f0;
+    --text2: #94a3b8;
+    --text3: #64748b;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    position: fixed;
+    left: 0; top: 0;
+    width: 240px;
+    height: 100vh;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+  }
+
+  .logo {
+    padding: 24px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .logo-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--accent);
+    color: #fff;
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    padding: 4px 8px;
+    border-radius: 3px;
+    margin-bottom: 8px;
+  }
+  .logo h1 {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text2);
+    letter-spacing: 0.5px;
+    line-height: 1.4;
+  }
+
+  .nav { flex: 1; padding: 16px 0; }
+  .nav-section {
+    padding: 8px 16px 4px;
+    font-family: var(--mono);
+    font-size: 9px;
+    font-weight: 600;
+    color: var(--text3);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 16px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text2);
+    transition: all 0.15s;
+    border-left: 2px solid transparent;
+    position: relative;
+  }
+  .nav-item:hover { color: var(--text); background: var(--bg3); }
+  .nav-item.active {
+    color: var(--accent);
+    background: rgba(255,107,53,0.08);
+    border-left-color: var(--accent);
+  }
+  .nav-item .icon { font-size: 14px; width: 18px; text-align: center; }
+  .nav-badge {
+    position: absolute;
+    right: 14px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 9px;
+    font-family: var(--mono);
+    padding: 1px 5px;
+    border-radius: 10px;
+    font-weight: 600;
+  }
+
+  .user-panel {
+    padding: 16px;
+    border-top: 1px solid var(--border);
+  }
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .avatar {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, var(--accent), var(--blue));
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+  }
+  .user-name { font-size: 12px; font-weight: 600; }
+  .user-role {
+    font-size: 10px;
+    font-family: var(--mono);
+    color: var(--accent);
+  }
+  .role-switcher {
+    margin-top: 10px;
+    display: flex;
+    gap: 4px;
+  }
+  .role-btn {
+    flex: 1;
+    padding: 4px 6px;
+    font-size: 9px;
+    font-family: var(--mono);
+    font-weight: 600;
+    border: 1px solid var(--border2);
+    background: transparent;
+    color: var(--text3);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.5px;
+  }
+  .role-btn:hover { color: var(--text2); border-color: var(--border2); }
+  .role-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
+  /* MAIN */
+  .main {
+    margin-left: 240px;
+    padding: 0;
+    min-height: 100vh;
+  }
+
+  /* TOP BAR */
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 28px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg2);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+  .topbar-title {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+  .topbar-sub {
+    font-size: 11px;
+    color: var(--text3);
+    font-family: var(--mono);
+    margin-top: 2px;
+  }
+  .topbar-actions { display: flex; gap: 10px; align-items: center; }
+
+  /* BUTTONS */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: none;
+    font-family: var(--sans);
+    letter-spacing: 0.2px;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent2); }
+  .btn-ghost {
+    background: transparent;
+    color: var(--text2);
+    border: 1px solid var(--border2);
+  }
+  .btn-ghost:hover { background: var(--surface); color: var(--text); }
+  .btn-green { background: var(--green); color: #fff; }
+  .btn-green:hover { filter: brightness(1.1); }
+  .btn-red { background: var(--red); color: #fff; }
+  .btn-red:hover { filter: brightness(1.1); }
+  .btn-sm { padding: 5px 10px; font-size: 11px; }
+
+  /* CONTENT */
+  .content { padding: 24px 28px; }
+
+  /* VIEWS */
+  .view { display: none; }
+  .view.active { display: block; animation: fadeIn 0.2s ease; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:translateY(0); } }
+
+  /* STATS GRID */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .stat-card.blue::before { background: var(--blue); }
+  .stat-card.green::before { background: var(--green); }
+  .stat-card.yellow::before { background: var(--yellow); }
+  .stat-card.red::before { background: var(--red); }
+  .stat-card.purple::before { background: var(--purple); }
+  .stat-card.orange::before { background: var(--accent); }
+
+  .stat-label {
+    font-size: 10px;
+    font-family: var(--mono);
+    color: var(--text3);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .stat-value {
+    font-size: 26px;
+    font-weight: 700;
+    font-family: var(--mono);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .stat-value.blue { color: var(--blue2); }
+  .stat-value.green { color: var(--green); }
+  .stat-value.yellow { color: var(--yellow); }
+  .stat-value.red { color: var(--red); }
+  .stat-value.orange { color: var(--accent); }
+  .stat-delta {
+    font-size: 10px;
+    font-family: var(--mono);
+    color: var(--text3);
+  }
+  .stat-icon {
+    position: absolute;
+    right: 16px;
+    top: 16px;
+    font-size: 22px;
+    opacity: 0.15;
+  }
+
+  /* GRID 2 COL */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 24px; }
+  .grid-3 { display: grid; grid-template-columns: 2fr 1fr; gap: 14px; margin-bottom: 24px; }
+
+  /* CARD */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .card-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .card-title {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    font-family: var(--mono);
+    color: var(--text2);
+  }
+  .card-body { padding: 16px 18px; }
+
+  /* TABLE */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    text-align: left;
+    padding: 10px 14px;
+    font-size: 9px;
+    font-family: var(--mono);
+    font-weight: 700;
+    color: var(--text3);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    background: var(--bg3);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  td {
+    padding: 11px 14px;
+    font-size: 12px;
+    border-bottom: 1px solid rgba(37,51,86,0.5);
+    vertical-align: middle;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+
+  /* BADGES */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-family: var(--mono);
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+  }
+  .badge-active { background: rgba(34,197,94,0.15); color: var(--green); border: 1px solid rgba(34,197,94,0.25); }
+  .badge-pending { background: rgba(245,158,11,0.15); color: var(--yellow); border: 1px solid rgba(245,158,11,0.25); }
+  .badge-expired { background: rgba(239,68,68,0.15); color: var(--red); border: 1px solid rgba(239,68,68,0.25); }
+  .badge-approved { background: rgba(59,130,246,0.15); color: var(--blue2); border: 1px solid rgba(59,130,246,0.25); }
+  .badge-draft { background: rgba(100,116,139,0.15); color: var(--text3); border: 1px solid rgba(100,116,139,0.25); }
+  .badge-warning { background: rgba(255,107,53,0.15); color: var(--accent); border: 1px solid rgba(255,107,53,0.25); }
+  .badge-created { background: rgba(168,85,247,0.15); color: var(--purple); border: 1px solid rgba(168,85,247,0.25); }
+
+  /* TAG */
+  .tag-chip {
+    font-family: var(--mono);
+    font-size: 10px;
+    background: rgba(59,130,246,0.1);
+    color: var(--blue2);
+    border: 1px solid rgba(59,130,246,0.2);
+    padding: 2px 7px;
+    border-radius: 3px;
+  }
+
+  /* PROGRESS BAR */
+  .progress-bar {
+    height: 5px;
+    background: var(--bg3);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 5px;
+  }
+  .progress-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
+
+  /* ALERT ITEMS */
+  .alert-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 11px 14px;
+    border-bottom: 1px solid rgba(37,51,86,0.5);
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  .alert-item:last-child { border-bottom: none; }
+  .alert-item:hover { background: rgba(255,255,255,0.02); }
+  .alert-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 4px;
+  }
+  .alert-msg { font-size: 12px; line-height: 1.5; }
+  .alert-time { font-size: 10px; color: var(--text3); font-family: var(--mono); margin-top: 2px; }
+
+  /* RESOURCE TAGS */
+  .resource-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+  .resource-tag {
+    font-family: var(--mono);
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    color: var(--text3);
+    font-weight: 600;
+  }
+
+  /* COST BAR */
+  .cost-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .cost-name { font-size: 11px; width: 80px; flex-shrink: 0; font-family: var(--mono); color: var(--text2); }
+  .cost-bar-wrap { flex: 1; height: 6px; background: var(--bg3); border-radius: 3px; overflow: hidden; }
+  .cost-bar-fill { height: 100%; border-radius: 3px; }
+  .cost-val { font-size: 10px; font-family: var(--mono); color: var(--text3); width: 60px; text-align: right; flex-shrink: 0; }
+
+  /* FORM */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: 1 / -1; }
+  .form-label {
+    font-size: 10px;
+    font-family: var(--mono);
+    font-weight: 600;
+    color: var(--text3);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .form-input, .form-select, .form-textarea {
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    padding: 9px 12px;
+    font-size: 13px;
+    color: var(--text);
+    font-family: var(--sans);
+    transition: border-color 0.15s;
+    outline: none;
+    width: 100%;
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+  }
+  .form-select option { background: var(--bg3); }
+  .form-textarea { resize: vertical; min-height: 80px; }
+
+  /* TAG GENERATED */
+  .tag-generated {
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    padding: 9px 12px;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--blue2);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  /* RESOURCE CHECKBOXES */
+  .resource-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+  }
+  .resource-check {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 10px;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .resource-check:hover { border-color: var(--blue); }
+  .resource-check.selected {
+    background: rgba(59,130,246,0.1);
+    border-color: var(--blue);
+    color: var(--blue2);
+  }
+  .resource-check input { display: none; }
+  .resource-check .rc-icon { font-size: 13px; }
+  .resource-check .rc-name { font-size: 11px; font-family: var(--mono); font-weight: 600; }
+
+  /* BUDGET METER */
+  .budget-meter {
+    position: relative;
+    height: 8px;
+    background: var(--bg3);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .budget-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.6s ease;
+  }
+
+  /* MODAL OVERLAY */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    border-radius: 12px;
+    width: 600px;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+    animation: slideUp 0.2s ease;
+  }
+  @keyframes slideUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+  .modal-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    background: var(--bg2);
+    z-index: 1;
+  }
+  .modal-title { font-size: 15px; font-weight: 700; }
+  .modal-close {
+    background: none;
+    border: none;
+    color: var(--text3);
+    font-size: 18px;
+    cursor: pointer;
+    padding: 4px;
+    line-height: 1;
+    transition: color 0.15s;
+  }
+  .modal-close:hover { color: var(--text); }
+  .modal-body { padding: 24px; }
+  .modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+  }
+
+  /* TOAST */
+  .toast-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .toast {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 260px;
+    animation: slideInRight 0.25s ease;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+  }
+  @keyframes slideInRight { from { opacity:0; transform:translateX(20px); } to { opacity:1; transform:translateX(0); } }
+  .toast-icon { font-size: 16px; }
+  .toast-msg { flex: 1; line-height: 1.4; }
+
+  /* STEP TRACKER */
+  .step-track { display: flex; align-items: center; gap: 0; margin-bottom: 20px; }
+  .step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-family: var(--mono);
+    color: var(--text3);
+    font-weight: 600;
+  }
+  .step.active { color: var(--blue2); }
+  .step.done { color: var(--green); }
+  .step-num {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    border: 1px solid currentColor;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    flex-shrink: 0;
+  }
+  .step.done .step-num { background: var(--green); border-color: var(--green); color: #fff; }
+  .step.active .step-num { background: rgba(59,130,246,0.2); border-color: var(--blue); }
+  .step-line { height: 1px; width: 32px; background: var(--border2); margin: 0 6px; }
+
+  /* EMPTY STATE */
+  .empty-state {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--text3);
+  }
+  .empty-icon { font-size: 40px; margin-bottom: 12px; }
+  .empty-title { font-size: 14px; font-weight: 600; color: var(--text2); margin-bottom: 6px; }
+  .empty-sub { font-size: 12px; }
+
+  /* TOP ACCOUNTS */
+  .top-account-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(37,51,86,0.4);
+  }
+  .top-account-row:last-child { border-bottom: none; }
+  .rank {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text3);
+    width: 18px;
+    flex-shrink: 0;
+  }
+  .ta-name { flex: 1; font-size: 12px; font-weight: 500; }
+  .ta-cost { font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--accent); }
+
+  /* APPROVAL CARD */
+  .approval-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  .approval-card-header {
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+  }
+  .approval-card-body { padding: 16px 18px; }
+  .approval-meta { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 14px; }
+  .meta-item { }
+  .meta-key { font-size: 9px; font-family: var(--mono); color: var(--text3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 3px; }
+  .meta-val { font-size: 12px; font-weight: 500; }
+  .approval-actions { display: flex; gap: 8px; }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+
+  /* INPUT GROUP */
+  .input-group { position: relative; }
+  .input-icon {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text3);
+    font-size: 14px;
+  }
+
+  /* AWS SERVICE BARS */
+  .service-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(37,51,86,0.3);
+  }
+  .service-item:last-child { border-bottom: none; }
+  .service-icon {
+    width: 28px; height: 28px;
+    background: linear-gradient(135deg, #ff6b35, #ff9a3c);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+  .service-name { font-size: 12px; font-weight: 600; width: 80px; flex-shrink: 0; }
+  .service-bar { flex: 1; }
+  .service-cost { font-family: var(--mono); font-size: 11px; color: var(--text2); width: 70px; text-align: right; flex-shrink: 0; }
+
+  /* EXPIRY URGENCY */
+  .urgency-high { color: var(--red); }
+  .urgency-med { color: var(--yellow); }
+  .urgency-low { color: var(--green); }
+
+  .mb-4 { margin-bottom: 16px; }
+  .mb-6 { margin-bottom: 24px; }
+  .flex { display: flex; }
+  .items-center { align-items: center; }
+  .gap-2 { gap: 8px; }
+  .gap-3 { gap: 12px; }
+  .flex-1 { flex: 1; }
+
+  /* FILTER ROW */
+  .filter-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .filter-input {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 12px;
+    color: var(--text);
+    font-family: var(--sans);
+    outline: none;
+  }
+  .filter-input:focus { border-color: var(--blue); }
+  .filter-select {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 12px;
+    color: var(--text);
+    font-family: var(--sans);
+    outline: none;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-badge">⚡ LOGICALIS</div>
+    <h1>AWS Account<br>Manager</h1>
+  </div>
+  <nav class="nav">
+    <div class="nav-section">PRINCIPAL</div>
+    <div class="nav-item active" onclick="navigate('dashboard', this)">
+      <span class="icon">📊</span> Dashboard
+    </div>
+    <div class="nav-item" onclick="navigate('accounts', this)">
+      <span class="icon">☁️</span> Contas AWS
+    </div>
+    <div class="nav-item" onclick="navigate('requests', this)">
+      <span class="icon">📋</span> Pedidos
+      <span class="nav-badge" id="pending-badge">3</span>
+    </div>
+    <div class="nav-section">FINANCEIRO</div>
+    <div class="nav-item" onclick="navigate('costs', this)">
+      <span class="icon">💰</span> Custos & Budget
+    </div>
+    <div class="nav-section">ADMINISTRAÇÃO</div>
+    <div class="nav-item" onclick="navigate('approvals', this)">
+      <span class="icon">✅</span> Aprovações
+      <span class="nav-badge" id="approval-badge">2</span>
+    </div>
+    <div class="nav-item" onclick="navigate('alerts', this)">
+      <span class="icon">🔔</span> Alertas
+      <span class="nav-badge" id="alert-badge">5</span>
+    </div>
+  </nav>
+  <div class="user-panel">
+    <div class="user-info">
+      <div class="avatar">JD</div>
+      <div>
+        <div class="user-name">João Dias</div>
+        <div class="user-role" id="current-role-label">ADMINISTRADOR</div>
+      </div>
+    </div>
+    <div class="role-switcher">
+      <button class="role-btn active" onclick="switchRole('admin', this)">ADMIN</button>
+      <button class="role-btn" onclick="switchRole('approver', this)">APROV.</button>
+      <button class="role-btn" onclick="switchRole('requester', this)">SOL.</button>
+      <button class="role-btn" onclick="switchRole('finops', this)">FINOPS</button>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div>
+      <div class="topbar-title" id="topbar-title">Dashboard</div>
+      <div class="topbar-sub" id="topbar-sub">VISÃO GERAL · ABRIL 2026</div>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn btn-ghost btn-sm" onclick="showNewRequestModal()">+ Novo Pedido</button>
+      <button class="btn btn-primary btn-sm" onclick="showToast('✅', 'Dados sincronizados com AWS', 'green')">⟳ Sincronizar</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ===== DASHBOARD ===== -->
+    <div class="view active" id="view-dashboard">
+      <div class="stats-grid">
+        <div class="stat-card blue">
+          <span class="stat-icon">☁️</span>
+          <div class="stat-label">Total de Contas</div>
+          <div class="stat-value blue">24</div>
+          <div class="stat-delta">↑ 3 este mês</div>
+        </div>
+        <div class="stat-card green">
+          <span class="stat-icon">✅</span>
+          <div class="stat-label">Contas Ativas</div>
+          <div class="stat-value green">18</div>
+          <div class="stat-delta">75% do total</div>
+        </div>
+        <div class="stat-card yellow">
+          <span class="stat-icon">⏳</span>
+          <div class="stat-label">Aguard. Aprovação</div>
+          <div class="stat-value yellow">3</div>
+          <div class="stat-delta">Revisão pendente</div>
+        </div>
+        <div class="stat-card orange">
+          <span class="stat-icon">💸</span>
+          <div class="stat-label">Custo Total/Mês</div>
+          <div class="stat-value orange">R$12.4k</div>
+          <div class="stat-delta">↑ R$1.2k vs mês ant.</div>
+        </div>
+      </div>
+
+      <div class="grid-3">
+        <!-- TOP 5 ACCOUNTS -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">🏆 Top 5 · Maior Gasto</span>
+            <span class="badge badge-warning">Abril 2026</span>
+          </div>
+          <div class="card-body">
+            <div class="top-account-row">
+              <span class="rank">#1</span>
+              <div class="flex flex-1 items-center gap-2">
+                <div>
+                  <div style="font-size:12px;font-weight:600">GenAI Bedrock PoC</div>
+                  <div style="font-size:10px;color:var(--text3);font-family:var(--mono)">CC-456 · logicalis-poc-8F3K29</div>
+                </div>
+              </div>
+              <div>
+                <div class="ta-cost">R$3.840</div>
+                <div class="progress-bar" style="width:120px;margin-top:4px"><div class="progress-fill" style="width:95%;background:var(--red)"></div></div>
+              </div>
+            </div>
+            <div class="top-account-row">
+              <span class="rank">#2</span>
+              <div class="flex flex-1 items-center gap-2">
+                <div>
+                  <div style="font-size:12px;font-weight:600">Workshop Data Eng.</div>
+                  <div style="font-size:10px;color:var(--text3);font-family:var(--mono)">CC-123 · logicalis-training-A7X91Q</div>
+                </div>
+              </div>
+              <div>
+                <div class="ta-cost">R$2.210</div>
+                <div class="progress-bar" style="width:120px;margin-top:4px"><div class="progress-fill" style="width:58%;background:var(--yellow)"></div></div>
+              </div>
+            </div>
+            <div class="top-account-row">
+              <span class="rank">#3</span>
+              <div class="flex flex-1 items-center gap-2">
+                <div>
+                  <div style="font-size:12px;font-weight:600">EKS Lab Kubernetes</div>
+                  <div style="font-size:10px;color:var(--text3);font-family:var(--mono)">CC-789 · logicalis-lab-ZP42LM</div>
+                </div>
+              </div>
+              <div>
+                <div class="ta-cost">R$1.920</div>
+                <div class="progress-bar" style="width:120px;margin-top:4px"><div class="progress-fill" style="width:48%;background:var(--yellow)"></div></div>
+              </div>
+            </div>
+            <div class="top-account-row">
+              <span class="rank">#4</span>
+              <div class="flex flex-1 items-center gap-2">
+                <div>
+                  <div style="font-size:12px;font-weight:600">Redshift Analytics</div>
+                  <div style="font-size:10px;color:var(--text3);font-family:var(--mono)">CC-321 · logicalis-demo-MK9R71</div>
+                </div>
+              </div>
+              <div>
+                <div class="ta-cost">R$1.380</div>
+                <div class="progress-bar" style="width:120px;margin-top:4px"><div class="progress-fill" style="width:35%;background:var(--green)"></div></div>
+              </div>
+            </div>
+            <div class="top-account-row">
+              <span class="rank">#5</span>
+              <div class="flex flex-1 items-center gap-2">
+                <div>
+                  <div style="font-size:12px;font-weight:600">SageMaker MLOps</div>
+                  <div style="font-size:10px;color:var(--text3);font-family:var(--mono)">CC-654 · logicalis-poc-QT55NX</div>
+                </div>
+              </div>
+              <div>
+                <div class="ta-cost">R$1.050</div>
+                <div class="progress-bar" style="width:120px;margin-top:4px"><div class="progress-fill" style="width:26%;background:var(--green)"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ALERTS PANEL -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">🔔 Alertas Recentes</span>
+            <span class="badge badge-warning">5 novos</span>
+          </div>
+          <div>
+            <div class="alert-item">
+              <div class="alert-dot" style="background:var(--red)"></div>
+              <div>
+                <div class="alert-msg"><strong>AWS POC 002</strong> vence em <span class="urgency-high">1 dia</span></div>
+                <div class="alert-time">GenAI Bedrock PoC · CC-456</div>
+              </div>
+            </div>
+            <div class="alert-item">
+              <div class="alert-dot" style="background:var(--red)"></div>
+              <div>
+                <div class="alert-msg"><strong>Budget 100%</strong> atingido — Workshop Data</div>
+                <div class="alert-time">Limite: R$2.000 · Gasto: R$2.210</div>
+              </div>
+            </div>
+            <div class="alert-item">
+              <div class="alert-dot" style="background:var(--yellow)"></div>
+              <div>
+                <div class="alert-msg"><strong>AWS Lab 007</strong> vence em <span class="urgency-med">7 dias</span></div>
+                <div class="alert-time">EKS Lab Kubernetes · CC-789</div>
+              </div>
+            </div>
+            <div class="alert-item">
+              <div class="alert-dot" style="background:var(--yellow)"></div>
+              <div>
+                <div class="alert-msg"><strong>Budget 80%</strong> — Redshift Analytics</div>
+                <div class="alert-time">Limite: R$1.500 · Gasto: R$1.380</div>
+              </div>
+            </div>
+            <div class="alert-item">
+              <div class="alert-dot" style="background:var(--blue)"></div>
+              <div>
+                <div class="alert-msg"><strong>AWS Lab 012</strong> sem tag obrigatória</div>
+                <div class="alert-time">Conta criada sem responsável técnico</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TOP SERVICES -->
+      <div class="card mb-6">
+        <div class="card-header">
+          <span class="card-title">☁️ Top Serviços AWS · Uso e Custo</span>
+          <span class="badge badge-approved">Mês atual</span>
+        </div>
+        <div class="card-body">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+            <div>
+              <div class="service-item">
+                <div class="service-icon">🤖</div>
+                <div class="service-name">Bedrock</div>
+                <div class="service-bar"><div class="progress-bar"><div class="progress-fill" style="width:88%;background:linear-gradient(90deg,#3b82f6,#7c3aed)"></div></div></div>
+                <div class="service-cost">R$3.200</div>
+              </div>
+              <div class="service-item">
+                <div class="service-icon">🖥️</div>
+                <div class="service-name">EC2</div>
+                <div class="service-bar"><div class="progress-bar"><div class="progress-fill" style="width:72%;background:linear-gradient(90deg,#f59e0b,#ef4444)"></div></div></div>
+                <div class="service-cost">R$2.680</div>
+              </div>
+              <div class="service-item">
+                <div class="service-icon">📦</div>
+                <div class="service-name">S3</div>
+                <div class="service-bar"><div class="progress-bar"><div class="progress-fill" style="width:60%;background:linear-gradient(90deg,#22c55e,#16a34a)"></div></div></div>
+                <div class="service-cost">R$1.890</div>
+              </div>
+            </div>
+            <div>
+              <div class="service-item">
+                <div class="service-icon">☸️</div>
+                <div class="service-name">EKS</div>
+                <div class="service-bar"><div class="progress-bar"><div class="progress-fill" style="width:52%;background:linear-gradient(90deg,#06b6d4,#3b82f6)"></div></div></div>
+                <div class="service-cost">R$1.540</div>
+              </div>
+              <div class="service-item">
+                <div class="service-icon">🗄️</div>
+                <div class="service-name">Redshift</div>
+                <div class="service-bar"><div class="progress-bar"><div class="progress-fill" style="width:40%;background:linear-gradient(90deg,#a855f7,#7c3aed)"></div></div></div>
+                <div class="service-cost">R$1.200</div>
+              </div>
+              <div class="service-item">
+                <div class="service-icon">🧪</div>
+                <div class="service-name">Glue</div>
+                <div class="service-bar"><div class="progress-bar"><div class="progress-fill" style="width:28%;background:linear-gradient(90deg,#f97316,#fb923c)"></div></div></div>
+                <div class="service-cost">R$840</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== CONTAS AWS ===== -->
+    <div class="view" id="view-accounts">
+      <div class="filter-row">
+        <input class="filter-input" type="text" placeholder="🔍  Buscar por projeto, conta, centro de custo...">
+        <select class="filter-select">
+          <option>Todos os status</option>
+          <option>Ativa</option>
+          <option>Aguardando aprovação</option>
+          <option>Próximo do vencimento</option>
+          <option>Expirada</option>
+        </select>
+        <select class="filter-select">
+          <option>Todos os objetivos</option>
+          <option>Treinamento</option>
+          <option>PoC</option>
+          <option>Demo</option>
+          <option>Estudo</option>
+          <option>Workshop</option>
+        </select>
+        <button class="btn btn-primary btn-sm" onclick="showNewRequestModal()">+ Nova Conta</button>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">☁️ Contas Cadastradas</span>
+          <span class="badge badge-approved">24 total</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>ID / Projeto</th>
+                <th>Tag</th>
+                <th>Centro de Custo</th>
+                <th>Objetivo</th>
+                <th>Status</th>
+                <th>Custo/Mês</th>
+                <th>Budget</th>
+                <th>Validade</th>
+                <th>Alerta</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="accounts-table-body">
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PEDIDOS ===== -->
+    <div class="view" id="view-requests">
+      <div class="filter-row">
+        <input class="filter-input" type="text" placeholder="🔍  Buscar pedidos...">
+        <select class="filter-select">
+          <option>Todos</option>
+          <option>Rascunho</option>
+          <option>Pendente</option>
+          <option>Aprovado</option>
+          <option>Reprovado</option>
+        </select>
+        <button class="btn btn-primary btn-sm" onclick="showNewRequestModal()">+ Novo Pedido</button>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">📋 Histórico de Pedidos</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Pedido</th>
+                <th>Projeto</th>
+                <th>Solicitante</th>
+                <th>Objetivo</th>
+                <th>Recursos</th>
+                <th>Budget</th>
+                <th>Status</th>
+                <th>Data</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="requests-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== CUSTOS ===== -->
+    <div class="view" id="view-costs">
+      <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
+        <div class="stat-card orange">
+          <div class="stat-label">Gasto Total (Abr)</div>
+          <div class="stat-value orange">R$12.400</div>
+          <div class="stat-delta">Budget: R$20.000</div>
+          <div class="budget-meter" style="margin-top:10px"><div class="budget-fill" style="width:62%;background:var(--yellow)"></div></div>
+        </div>
+        <div class="stat-card red">
+          <div class="stat-label">Contas Acima do Budget</div>
+          <div class="stat-value red">2</div>
+          <div class="stat-delta">Workshop Data, GenAI PoC</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-label">Economia Estimada</div>
+          <div class="stat-value green">R$1.820</div>
+          <div class="stat-delta">vs. mês anterior</div>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header"><span class="card-title">💰 Gasto por Serviço AWS</span></div>
+          <div class="card-body">
+            <div class="cost-row"><span class="cost-name">Bedrock</span><div class="cost-bar-wrap"><div class="cost-bar-fill" style="width:88%;background:linear-gradient(90deg,#7c3aed,#3b82f6)"></div></div><span class="cost-val">R$3.200</span></div>
+            <div class="cost-row"><span class="cost-name">EC2</span><div class="cost-bar-wrap"><div class="cost-bar-fill" style="width:72%;background:linear-gradient(90deg,#f59e0b,#ef4444)"></div></div><span class="cost-val">R$2.680</span></div>
+            <div class="cost-row"><span class="cost-name">S3</span><div class="cost-bar-wrap"><div class="cost-bar-fill" style="width:60%;background:linear-gradient(90deg,#22c55e,#16a34a)"></div></div><span class="cost-val">R$1.890</span></div>
+            <div class="cost-row"><span class="cost-name">EKS</span><div class="cost-bar-wrap"><div class="cost-bar-fill" style="width:52%;background:linear-gradient(90deg,#06b6d4,#3b82f6)"></div></div><span class="cost-val">R$1.540</span></div>
+            <div class="cost-row"><span class="cost-name">Redshift</span><div class="cost-bar-wrap"><div class="cost-bar-fill" style="width:40%;background:linear-gradient(90deg,#a855f7,#ec4899)"></div></div><span class="cost-val">R$1.200</span></div>
+            <div class="cost-row"><span class="cost-name">Glue</span><div class="cost-bar-wrap"><div class="cost-bar-fill" style="width:28%;background:linear-gradient(90deg,#f97316,#fb923c)"></div></div><span class="cost-val">R$840</span></div>
+            <div class="cost-row"><span class="cost-name">Lambda</span><div class="cost-bar-wrap"><div class="cost-bar-fill" style="width:18%;background:linear-gradient(90deg,#22c55e,#4ade80)"></div></div><span class="cost-val">R$540</span></div>
+            <div class="cost-row"><span class="cost-name">Outros</span><div class="cost-bar-wrap"><div class="cost-bar-fill" style="width:15%;background:var(--border2)"></div></div><span class="cost-val">R$510</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">📊 Budget por Conta</span></div>
+          <div class="card-body">
+            <div id="budget-by-account"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== APROVAÇÕES ===== -->
+    <div class="view" id="view-approvals">
+      <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px">
+        <div class="stat-card yellow"><div class="stat-label">Pendentes</div><div class="stat-value yellow">2</div></div>
+        <div class="stat-card green"><div class="stat-label">Aprovados (mês)</div><div class="stat-value green">11</div></div>
+        <div class="stat-card red"><div class="stat-label">Reprovados (mês)</div><div class="stat-value red">2</div></div>
+        <div class="stat-card blue"><div class="stat-label">SLA Médio</div><div class="stat-value blue">1.4d</div></div>
+      </div>
+      <div id="approvals-list"></div>
+    </div>
+
+    <!-- ===== ALERTAS ===== -->
+    <div class="view" id="view-alerts">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">🔔 Central de Alertas</span>
+          <button class="btn btn-ghost btn-sm" onclick="showToast('✅','Todos os alertas marcados como lidos','green')">Marcar todos como lido</button>
+        </div>
+        <div id="alerts-list"></div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</main><!-- /main -->
+
+<!-- MODAL: NOVO PEDIDO -->
+<div class="modal-overlay" id="modal-new-request">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Novo Pedido de Conta AWS</div>
+        <div style="font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:3px">Preencha os dados para solicitar uma nova conta</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('modal-new-request')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="step-track" style="margin-bottom:24px">
+        <div class="step active"><div class="step-num">1</div> Projeto</div>
+        <div class="step-line"></div>
+        <div class="step"><div class="step-num">2</div> Recursos</div>
+        <div class="step-line"></div>
+        <div class="step"><div class="step-num">3</div> Budget</div>
+        <div class="step-line"></div>
+        <div class="step"><div class="step-num">4</div> Revisão</div>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Nome do Projeto *</label>
+          <input class="form-input" type="text" id="f-project" placeholder="Ex: Workshop Engenharia de Dados">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Centro de Custo *</label>
+          <input class="form-input" type="text" id="f-cc" placeholder="Ex: CC-12345">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Objetivo *</label>
+          <select class="form-select" id="f-purpose" onchange="updateTagPreview()">
+            <option value="">Selecione...</option>
+            <option value="training">Treinamento</option>
+            <option value="poc">PoC</option>
+            <option value="demo">Demo</option>
+            <option value="study">Estudo</option>
+            <option value="workshop">Workshop</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Ambiente</label>
+          <select class="form-select" id="f-env">
+            <option>Sandbox</option>
+            <option>Dev</option>
+            <option>Lab</option>
+            <option>Demo</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Responsável Técnico *</label>
+          <input class="form-input" type="text" id="f-owner" placeholder="email@logicalis.com" value="joao.dias@logicalis.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Centro de Custo</label>
+          <input class="form-input" type="text" id="f-requester" placeholder="Solicitante" value="João Dias">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Data Início *</label>
+          <input class="form-input" type="date" id="f-start">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Data Fim *</label>
+          <input class="form-input" type="date" id="f-end">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Budget Previsto (R$)</label>
+          <input class="form-input" type="number" id="f-budget" placeholder="1000" oninput="updateTagPreview()">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tag Gerada Automaticamente</label>
+          <div class="tag-generated">
+            <span id="tag-preview">logicalis-???-??????</span>
+            <button class="btn btn-ghost btn-sm" onclick="generateTag()" style="padding:3px 8px;font-size:10px">↺ Gerar</button>
+          </div>
+        </div>
+        <div class="form-group full">
+          <label class="form-label">Justificativa</label>
+          <textarea class="form-textarea" id="f-justification" placeholder="Descreva o motivo e objetivos desta conta AWS..."></textarea>
+        </div>
+        <div class="form-group full">
+          <label class="form-label">Recursos AWS Necessários</label>
+          <div class="resource-grid" id="resource-grid">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-new-request')">Cancelar</button>
+      <button class="btn btn-ghost" onclick="saveDraft()">💾 Salvar Rascunho</button>
+      <button class="btn btn-primary" onclick="submitRequest()">📤 Enviar para Aprovação</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: APPROVAL DETAIL -->
+<div class="modal-overlay" id="modal-approve">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="approve-modal-title">Aprovar Pedido</div>
+      <button class="modal-close" onclick="closeModal('modal-approve')">✕</button>
+    </div>
+    <div class="modal-body" id="approve-modal-body">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-approve')">Fechar</button>
+      <button class="btn btn-red" onclick="rejectRequest()">✕ Reprovar</button>
+      <button class="btn btn-green" onclick="approveRequest()">✓ Aprovar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+// ========== DATA ==========
+const AWS_RESOURCES = [
+  { id:'ec2', icon:'🖥️', name:'EC2' },
+  { id:'s3', icon:'📦', name:'S3' },
+  { id:'rds', icon:'🗄️', name:'RDS' },
+  { id:'glue', icon:'🔧', name:'Glue' },
+  { id:'lambda', icon:'λ', name:'Lambda' },
+  { id:'athena', icon:'🔍', name:'Athena' },
+  { id:'redshift', icon:'📊', name:'Redshift' },
+  { id:'emr', icon:'⚡', name:'EMR' },
+  { id:'vpc', icon:'🌐', name:'VPC' },
+  { id:'cloudwatch', icon:'👁️', name:'CloudWatch' },
+  { id:'bedrock', icon:'🤖', name:'Bedrock' },
+  { id:'sagemaker', icon:'🧪', name:'SageMaker' },
+  { id:'eks', icon:'☸️', name:'EKS' },
+  { id:'dynamodb', icon:'⚡', name:'DynamoDB' },
+  { id:'apigw', icon:'🔗', name:'API Gateway' },
+];
+
+const ACCOUNTS = [
+  { id:'ACC-001', awsId:'123456789012', project:'Workshop Engenharia de Dados', tag:'logicalis-training-A7X91Q', cc:'CC-123', purpose:'Treinamento', status:'ACTIVE', cost:2210, budget:2000, start:'2026-04-01', end:'2026-05-10', resources:['S3','Glue','Athena','Lambda'], owner:'joao.dias@logicalis.com' },
+  { id:'ACC-002', awsId:'234567890123', project:'GenAI Bedrock PoC', tag:'logicalis-poc-8F3K29', cc:'CC-456', purpose:'PoC', status:'WARNING', cost:3840, budget:4000, start:'2026-04-15', end:'2026-04-30', resources:['Bedrock','S3','Lambda','API Gateway'], owner:'maria.silva@logicalis.com' },
+  { id:'ACC-003', awsId:'345678901234', project:'EKS Lab Kubernetes', tag:'logicalis-lab-ZP42LM', cc:'CC-789', purpose:'Estudo', status:'ACTIVE', cost:1920, budget:3000, start:'2026-03-20', end:'2026-05-20', resources:['EKS','EC2','VPC','CloudWatch'], owner:'pedro.santos@logicalis.com' },
+  { id:'ACC-004', awsId:'456789012345', project:'Redshift Analytics Demo', tag:'logicalis-demo-MK9R71', cc:'CC-321', purpose:'Demo', status:'ACTIVE', cost:1380, budget:1500, start:'2026-04-01', end:'2026-06-01', resources:['Redshift','S3','Glue'], owner:'ana.lima@logicalis.com' },
+  { id:'ACC-005', awsId:'567890123456', project:'SageMaker MLOps PoC', tag:'logicalis-poc-QT55NX', cc:'CC-654', purpose:'PoC', status:'ACTIVE', cost:1050, budget:2000, start:'2026-04-10', end:'2026-05-30', resources:['SageMaker','S3','EC2'], owner:'carlos.rocha@logicalis.com' },
+  { id:'ACC-006', awsId:null, project:'Data Lake Workshop', tag:'logicalis-workshop-B2X44P', cc:'CC-111', purpose:'Workshop', status:'PENDING', cost:0, budget:1500, start:'2026-05-01', end:'2026-05-15', resources:['S3','Glue','Athena'], owner:'rita.melo@logicalis.com' },
+  { id:'ACC-007', awsId:null, project:'DynamoDB NoSQL Lab', tag:'logicalis-lab-HJ73KQ', cc:'CC-222', purpose:'Estudo', status:'PENDING', cost:0, budget:500, start:'2026-05-05', end:'2026-05-20', resources:['DynamoDB','Lambda'], owner:'lucas.ferreira@logicalis.com' },
+  { id:'ACC-008', awsId:'678901234567', project:'Lambda Serverless', tag:'logicalis-study-NM12PP', cc:'CC-333', purpose:'Estudo', status:'EXPIRED', cost:320, budget:500, start:'2026-03-01', end:'2026-04-01', resources:['Lambda','API Gateway','DynamoDB'], owner:'fernanda.costa@logicalis.com' },
+];
+
+const REQUESTS = [
+  { id:'REQ-0001', project:'Workshop Engenharia de Dados', requester:'João Dias', purpose:'Treinamento', resources:['S3','Glue','Athena','Lambda'], budget:2000, status:'APPROVED', date:'2026-04-01' },
+  { id:'REQ-0002', project:'GenAI Bedrock PoC', requester:'Maria Silva', purpose:'PoC', resources:['Bedrock','S3','Lambda'], budget:4000, status:'APPROVED', date:'2026-04-15' },
+  { id:'REQ-0003', project:'Data Lake Workshop', requester:'Rita Melo', purpose:'Workshop', resources:['S3','Glue','Athena'], budget:1500, status:'PENDING', date:'2026-04-25' },
+  { id:'REQ-0004', project:'DynamoDB NoSQL Lab', requester:'Lucas Ferreira', purpose:'Estudo', resources:['DynamoDB','Lambda'], budget:500, status:'PENDING', date:'2026-04-26' },
+  { id:'REQ-0005', project:'Lambda Serverless', requester:'Fernanda Costa', purpose:'Estudo', resources:['Lambda','API Gateway'], budget:500, status:'REJECTED', date:'2026-03-01' },
+  { id:'REQ-0006', project:'RDS MySQL Study', requester:'Paulo Braga', purpose:'Estudo', resources:['RDS','EC2'], budget:800, status:'DRAFT', date:'2026-04-28' },
+];
+
+const ALERTS = [
+  { type:'red', icon:'🚨', msg:'<strong>ACC-002 · GenAI Bedrock PoC</strong> vence AMANHÃ (30/04/2026)', time:'Há 2 horas', read:false },
+  { type:'red', icon:'💸', msg:'<strong>Budget 100% atingido</strong> — Workshop Engenharia de Dados (R$2.210 / R$2.000)', time:'Há 3 horas', read:false },
+  { type:'yellow', icon:'⏰', msg:'<strong>ACC-003 · EKS Lab Kubernetes</strong> vence em 7 dias (06/05/2026)', time:'Hoje, 09:00', read:false },
+  { type:'yellow', icon:'📊', msg:'<strong>Budget 80% atingido</strong> — Redshift Analytics Demo (R$1.380 / R$1.500)', time:'Hoje, 08:30', read:false },
+  { type:'blue', icon:'🏷️', msg:'<strong>ACC-008 · Lambda Serverless</strong> sem tag obrigatória de responsável técnico', time:'Ontem, 14:20', read:false },
+  { type:'green', icon:'✅', msg:'<strong>REQ-0003 · Data Lake Workshop</strong> aguardando aprovação há 3 dias', time:'25/04/2026', read:true },
+  { type:'blue', icon:'👤', msg:'<strong>REQ-0004 · DynamoDB NoSQL Lab</strong> novo pedido de aprovação', time:'26/04/2026', read:true },
+];
+
+// ========== INIT ==========
+document.addEventListener('DOMContentLoaded', () => {
+  renderResourceGrid();
+  renderAccountsTable();
+  renderRequestsTable();
+  renderApprovals();
+  renderAlerts();
+  renderBudgetByAccount();
+  
+  // Set default dates
+  const today = new Date().toISOString().split('T')[0];
+  const nextMonth = new Date(Date.now() + 30*24*60*60*1000).toISOString().split('T')[0];
+  document.getElementById('f-start').value = today;
+  document.getElementById('f-end').value = nextMonth;
+  
+  generateTag();
+});
+
+// ========== NAVIGATION ==========
+function navigate(view, el) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('view-' + view).classList.add('active');
+  if (el) el.classList.add('active');
+  
+  const titles = {
+    dashboard: ['Dashboard', 'VISÃO GERAL · ABRIL 2026'],
+    accounts: ['Contas AWS', 'GERENCIAMENTO DE CONTAS · 24 CADASTRADAS'],
+    requests: ['Pedidos', 'HISTÓRICO DE SOLICITAÇÕES'],
+    costs: ['Custos & Budget', 'ANÁLISE FINANCEIRA · ABRIL 2026'],
+    approvals: ['Aprovações', 'FILA DE APROVAÇÃO · 2 PENDENTES'],
+    alerts: ['Alertas', 'CENTRAL DE NOTIFICAÇÕES · 5 NÃO LIDOS'],
+  };
+  document.getElementById('topbar-title').textContent = titles[view][0];
+  document.getElementById('topbar-sub').textContent = titles[view][1];
+}
+
+// ========== ROLE SWITCHER ==========
+function switchRole(role, btn) {
+  document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const labels = { admin:'ADMINISTRADOR', approver:'APROVADOR', requester:'SOLICITANTE', finops:'FINOPS' };
+  document.getElementById('current-role-label').textContent = labels[role];
+  showToast('👤', `Role alterada para: ${labels[role]}`, 'blue');
+}
+
+// ========== STATUS HELPERS ==========
+function statusBadge(status) {
+  const map = {
+    ACTIVE: '<span class="badge badge-active">● Ativa</span>',
+    PENDING: '<span class="badge badge-pending">◎ Aguard. Aprovação</span>',
+    WARNING: '<span class="badge badge-warning">⚠ Próx. Vencimento</span>',
+    EXPIRED: '<span class="badge badge-expired">✕ Expirada</span>',
+    APPROVED: '<span class="badge badge-approved">✓ Aprovado</span>',
+    REJECTED: '<span class="badge badge-expired">✕ Reprovado</span>',
+    DRAFT: '<span class="badge badge-draft">○ Rascunho</span>',
+  };
+  return map[status] || status;
+}
+
+function expiryAlert(endDate) {
+  const now = new Date();
+  const end = new Date(endDate);
+  const diff = Math.ceil((end - now) / (1000*60*60*24));
+  if (diff < 0) return '<span class="urgency-high">Expirada</span>';
+  if (diff <= 1) return `<span class="urgency-high">🚨 ${diff}d</span>`;
+  if (diff <= 7) return `<span class="urgency-med">⚠ ${diff}d</span>`;
+  if (diff <= 15) return `<span class="urgency-med">${diff}d</span>`;
+  return `<span class="urgency-low">${diff}d</span>`;
+}
+
+function budgetBar(cost, budget) {
+  const pct = Math.min(100, Math.round((cost / budget) * 100));
+  const color = pct >= 100 ? 'var(--red)' : pct >= 80 ? 'var(--yellow)' : 'var(--green)';
+  return `
+    <div style="font-size:10px;font-family:var(--mono);color:var(--text3);margin-bottom:3px">
+      R$${cost.toLocaleString('pt-BR')} / R$${budget.toLocaleString('pt-BR')} (${pct}%)
+    </div>
+    <div class="progress-bar" style="width:120px">
+      <div class="progress-fill" style="width:${pct}%;background:${color}"></div>
+    </div>`;
+}
+
+// ========== RENDER TABLES ==========
+function renderAccountsTable() {
+  const tbody = document.getElementById('accounts-table-body');
+  tbody.innerHTML = ACCOUNTS.map(a => `
+    <tr>
+      <td>
+        <div style="font-size:12px;font-weight:600">${a.id}</div>
+        <div style="font-size:11px;color:var(--text3)">${a.project}</div>
+      </td>
+      <td><span class="tag-chip">${a.tag}</span></td>
+      <td><span style="font-family:var(--mono);font-size:11px">${a.cc}</span></td>
+      <td>${a.purpose}</td>
+      <td>${statusBadge(a.status)}</td>
+      <td><span style="font-family:var(--mono);font-weight:600;color:var(--accent)">R$${a.cost.toLocaleString('pt-BR')}</span></td>
+      <td>${budgetBar(a.cost, a.budget)}</td>
+      <td><span style="font-family:var(--mono);font-size:11px">${a.end}</span></td>
+      <td>${expiryAlert(a.end)}</td>
+      <td>
+        <div style="display:flex;gap:4px">
+          <button class="btn btn-ghost btn-sm" onclick="showToast('📋','Detalhes de ${a.id} abertos','blue')">Ver</button>
+          ${a.status === 'ACTIVE' ? `<button class="btn btn-ghost btn-sm" onclick="showToast('⏸️','Conta ${a.id} pausada','yellow')">Pausar</button>` : ''}
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function renderRequestsTable() {
+  const tbody = document.getElementById('requests-table-body');
+  tbody.innerHTML = REQUESTS.map(r => `
+    <tr>
+      <td><span style="font-family:var(--mono);font-size:11px;font-weight:700;color:var(--blue2)">${r.id}</span></td>
+      <td><span style="font-size:12px;font-weight:500">${r.project}</span></td>
+      <td><span style="font-size:11px;color:var(--text2)">${r.requester}</span></td>
+      <td>${r.purpose}</td>
+      <td><div class="resource-tags">${r.resources.slice(0,3).map(res => `<span class="resource-tag">${res}</span>`).join('')}${r.resources.length > 3 ? `<span class="resource-tag">+${r.resources.length-3}</span>` : ''}</div></td>
+      <td><span style="font-family:var(--mono)">R$${r.budget.toLocaleString('pt-BR')}</span></td>
+      <td>${statusBadge(r.status)}</td>
+      <td><span style="font-family:var(--mono);font-size:11px;color:var(--text3)">${r.date}</span></td>
+      <td>
+        <div style="display:flex;gap:4px">
+          ${r.status === 'PENDING' ? `<button class="btn btn-green btn-sm" onclick="openApproveModal('${r.id}')">✓</button><button class="btn btn-red btn-sm" onclick="showToast('✕','Pedido ${r.id} reprovado','red')">✕</button>` : ''}
+          <button class="btn btn-ghost btn-sm" onclick="showToast('📋','Pedido ${r.id} aberto','blue')">Ver</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function renderApprovals() {
+  const pending = REQUESTS.filter(r => r.status === 'PENDING');
+  const container = document.getElementById('approvals-list');
+  
+  if (pending.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="empty-icon">✅</div><div class="empty-title">Nenhum pedido pendente</div><div class="empty-sub">Todos os pedidos foram revisados</div></div>`;
+    return;
+  }
+  
+  container.innerHTML = pending.map(r => `
+    <div class="approval-card">
+      <div class="approval-card-header">
+        <div>
+          <span style="font-family:var(--mono);font-size:11px;font-weight:700;color:var(--blue2)">${r.id}</span>
+          <span style="margin-left:8px;font-size:14px;font-weight:600">${r.project}</span>
+        </div>
+        <span class="badge badge-pending">Aguardando aprovação</span>
+      </div>
+      <div class="approval-card-body">
+        <div class="approval-meta">
+          <div class="meta-item"><div class="meta-key">Solicitante</div><div class="meta-val">${r.requester}</div></div>
+          <div class="meta-item"><div class="meta-key">Objetivo</div><div class="meta-val">${r.purpose}</div></div>
+          <div class="meta-item"><div class="meta-key">Budget</div><div class="meta-val" style="font-family:var(--mono);color:var(--accent)">R$${r.budget.toLocaleString('pt-BR')}</div></div>
+          <div class="meta-item"><div class="meta-key">Data pedido</div><div class="meta-val">${r.date}</div></div>
+          <div class="meta-item"><div class="meta-key">Recursos</div><div class="meta-val"><div class="resource-tags">${r.resources.map(res=>`<span class="resource-tag">${res}</span>`).join('')}</div></div></div>
+          <div class="meta-item"><div class="meta-key">SLA</div><div class="meta-val urgency-med">3 dias aguardando</div></div>
+        </div>
+        <div class="form-group" style="margin-bottom:12px">
+          <label class="form-label">Comentário do Aprovador</label>
+          <textarea class="form-textarea" id="comment-${r.id}" placeholder="Justificativa de aprovação ou reprovação..." style="min-height:60px"></textarea>
+        </div>
+        <div class="approval-actions">
+          <button class="btn btn-red" onclick="rejectRequestId('${r.id}')">✕ Reprovar Pedido</button>
+          <button class="btn btn-green" onclick="approveRequestId('${r.id}')">✓ Aprovar e Criar Conta</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderAlerts() {
+  const container = document.getElementById('alerts-list');
+  container.innerHTML = ALERTS.map((a, i) => `
+    <div class="alert-item" style="${a.read ? 'opacity:0.5' : ''}">
+      <div class="alert-dot" style="background:${a.type === 'red' ? 'var(--red)' : a.type === 'yellow' ? 'var(--yellow)' : a.type === 'green' ? 'var(--green)' : 'var(--blue)'}"></div>
+      <div style="flex:1">
+        <div class="alert-msg">${a.msg}</div>
+        <div class="alert-time">${a.time}</div>
+      </div>
+      <span style="font-size:18px">${a.icon}</span>
+      ${!a.read ? `<button class="btn btn-ghost btn-sm" onclick="markAlertRead(${i})">✓</button>` : '<span style="font-size:10px;color:var(--text3);font-family:var(--mono)">LIDO</span>'}
+    </div>
+  `).join('');
+}
+
+function renderBudgetByAccount() {
+  const container = document.getElementById('budget-by-account');
+  const actives = ACCOUNTS.filter(a => a.status !== 'PENDING');
+  container.innerHTML = actives.map(a => {
+    const pct = Math.min(100, Math.round((a.cost / a.budget) * 100));
+    const color = pct >= 100 ? 'var(--red)' : pct >= 80 ? 'var(--yellow)' : 'var(--green)';
+    return `
+      <div style="margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+          <span style="font-size:11px;font-weight:500">${a.project.substring(0,28)}${a.project.length > 28 ? '...' : ''}</span>
+          <span style="font-family:var(--mono);font-size:10px;color:${color}">${pct}%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:${pct}%;background:${color}"></div>
+        </div>
+        <div style="font-size:9px;font-family:var(--mono);color:var(--text3);margin-top:2px">R$${a.cost.toLocaleString('pt-BR')} / R$${a.budget.toLocaleString('pt-BR')}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function markAlertRead(i) {
+  ALERTS[i].read = true;
+  renderAlerts();
+  const unread = ALERTS.filter(a => !a.read).length;
+  document.getElementById('alert-badge').textContent = unread;
+  showToast('✅', 'Alerta marcado como lido', 'green');
+}
+
+// ========== RESOURCE GRID ==========
+let selectedResources = new Set();
+
+function renderResourceGrid() {
+  const grid = document.getElementById('resource-grid');
+  grid.innerHTML = AWS_RESOURCES.map(r => `
+    <div class="resource-check" id="rc-${r.id}" onclick="toggleResource('${r.id}')">
+      <input type="checkbox" id="cb-${r.id}">
+      <span class="rc-icon">${r.icon}</span>
+      <span class="rc-name">${r.name}</span>
+    </div>
+  `).join('');
+}
+
+function toggleResource(id) {
+  const el = document.getElementById('rc-' + id);
+  if (selectedResources.has(id)) {
+    selectedResources.delete(id);
+    el.classList.remove('selected');
+  } else {
+    selectedResources.add(id);
+    el.classList.add('selected');
+  }
+}
+
+// ========== TAG GENERATION ==========
+function generateTag() {
+  const purpose = document.getElementById('f-purpose').value || 'lab';
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = '';
+  for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  const tagMap = { training:'training', poc:'poc', demo:'demo', study:'study', workshop:'workshop', lab:'lab', '':'lab' };
+  const tag = `logicalis-${tagMap[purpose] || 'lab'}-${code}`;
+  document.getElementById('tag-preview').textContent = tag;
+}
+
+function updateTagPreview() { generateTag(); }
+
+// ========== MODALS ==========
+function showNewRequestModal() {
+  document.getElementById('modal-new-request').classList.add('open');
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+let currentApproveId = null;
+
+function openApproveModal(reqId) {
+  currentApproveId = reqId;
+  const r = REQUESTS.find(req => req.id === reqId);
+  document.getElementById('approve-modal-title').textContent = `Aprovação — ${r.id}`;
+  document.getElementById('approve-modal-body').innerHTML = `
+    <div class="approval-meta" style="margin-bottom:20px">
+      <div class="meta-item"><div class="meta-key">Projeto</div><div class="meta-val">${r.project}</div></div>
+      <div class="meta-item"><div class="meta-key">Solicitante</div><div class="meta-val">${r.requester}</div></div>
+      <div class="meta-item"><div class="meta-key">Budget</div><div class="meta-val" style="font-family:var(--mono);color:var(--accent)">R$${r.budget.toLocaleString('pt-BR')}</div></div>
+      <div class="meta-item"><div class="meta-key">Objetivo</div><div class="meta-val">${r.purpose}</div></div>
+      <div class="meta-item"><div class="meta-key">Data pedido</div><div class="meta-val">${r.date}</div></div>
+      <div class="meta-item"><div class="meta-key">Recursos</div><div class="meta-val"><div class="resource-tags">${r.resources.map(res=>`<span class="resource-tag">${res}</span>`).join('')}</div></div></div>
+    </div>
+    <div class="form-group" style="margin-bottom:12px">
+      <label class="form-label">Budget Aprovado (R$)</label>
+      <input class="form-input" type="number" id="modal-budget" value="${r.budget}">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Comentário</label>
+      <textarea class="form-textarea" id="modal-comment" placeholder="Justificativa..."></textarea>
+    </div>
+  `;
+  document.getElementById('modal-approve').classList.add('open');
+}
+
+function approveRequest() {
+  closeModal('modal-approve');
+  if (currentApproveId) {
+    const r = REQUESTS.find(req => req.id === currentApproveId);
+    r.status = 'APPROVED';
+    renderRequestsTable();
+    renderApprovals();
+    document.getElementById('approval-badge').textContent = REQUESTS.filter(r=>r.status==='PENDING').length;
+    showToast('✅', `Pedido ${currentApproveId} aprovado! Conta sendo criada.`, 'green');
+  }
+}
+
+function rejectRequest() {
+  closeModal('modal-approve');
+  if (currentApproveId) {
+    const r = REQUESTS.find(req => req.id === currentApproveId);
+    r.status = 'REJECTED';
+    renderRequestsTable();
+    renderApprovals();
+    document.getElementById('approval-badge').textContent = REQUESTS.filter(r=>r.status==='PENDING').length;
+    showToast('✕', `Pedido ${currentApproveId} reprovado.`, 'red');
+  }
+}
+
+function approveRequestId(id) {
+  const r = REQUESTS.find(req => req.id === id);
+  if (r) r.status = 'APPROVED';
+  renderRequestsTable();
+  renderApprovals();
+  document.getElementById('approval-badge').textContent = REQUESTS.filter(r=>r.status==='PENDING').length;
+  showToast('✅', `Pedido ${id} aprovado! Conta AWS sendo provisionada.`, 'green');
+}
+
+function rejectRequestId(id) {
+  const r = REQUESTS.find(req => req.id === id);
+  if (r) r.status = 'REJECTED';
+  renderRequestsTable();
+  renderApprovals();
+  document.getElementById('approval-badge').textContent = REQUESTS.filter(r=>r.status==='PENDING').length;
+  showToast('✕', `Pedido ${id} reprovado.`, 'red');
+}
+
+function submitRequest() {
+  const project = document.getElementById('f-project').value;
+  const cc = document.getElementById('f-cc').value;
+  const purpose = document.getElementById('f-purpose').value;
+  
+  if (!project || !cc || !purpose) {
+    showToast('⚠️', 'Preencha os campos obrigatórios', 'yellow');
+    return;
+  }
+  if (selectedResources.size === 0) {
+    showToast('⚠️', 'Selecione pelo menos um recurso AWS', 'yellow');
+    return;
+  }
+  
+  const tag = document.getElementById('tag-preview').textContent;
+  const newId = 'REQ-' + String(REQUESTS.length + 1).padStart(4, '0');
+  REQUESTS.push({
+    id: newId,
+    project,
+    requester: 'João Dias',
+    purpose: document.getElementById('f-purpose').options[document.getElementById('f-purpose').selectedIndex].text,
+    resources: [...selectedResources].map(id => AWS_RESOURCES.find(r=>r.id===id)?.name || id),
+    budget: parseInt(document.getElementById('f-budget').value) || 0,
+    status: 'PENDING',
+    date: new Date().toISOString().split('T')[0],
+    tag,
+  });
+  
+  renderRequestsTable();
+  renderApprovals();
+  document.getElementById('pending-badge').textContent = REQUESTS.filter(r=>r.status==='PENDING').length;
+  document.getElementById('approval-badge').textContent = REQUESTS.filter(r=>r.status==='PENDING').length;
+  closeModal('modal-new-request');
+  showToast('📤', `Pedido ${newId} enviado para aprovação! Tag: ${tag}`, 'green');
+}
+
+function saveDraft() {
+  const project = document.getElementById('f-project').value || 'Sem nome';
+  const newId = 'REQ-' + String(REQUESTS.length + 1).padStart(4, '0');
+  REQUESTS.push({
+    id: newId, project, requester: 'João Dias', purpose: 'N/A',
+    resources: [...selectedResources], budget: 0, status: 'DRAFT',
+    date: new Date().toISOString().split('T')[0],
+  });
+  renderRequestsTable();
+  closeModal('modal-new-request');
+  showToast('💾', `Rascunho ${newId} salvo com sucesso`, 'blue');
+}
+
+// ========== TOAST ==========
+function showToast(icon, msg, type) {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  const colors = { green: 'var(--green)', red: 'var(--red)', yellow: 'var(--yellow)', blue: 'var(--blue2)' };
+  toast.className = 'toast';
+  toast.style.borderLeftColor = colors[type] || 'var(--border2)';
+  toast.style.borderLeftWidth = '3px';
+  toast.innerHTML = `<span class="toast-icon">${icon}</span><span class="toast-msg">${msg}</span>`;
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(20px)';
+    toast.style.transition = 'all 0.3s ease';
+    setTimeout(() => toast.remove(), 300);
+  }, 3500);
+}
+
+// Close modals on overlay click
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) overlay.classList.remove('open');
+  });
+});
+</script>
+</body>
+</html>
